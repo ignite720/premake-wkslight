@@ -60,15 +60,6 @@ newaction({
 --
 -- Register `thismodule` properties
 --
-api.register({
-	name = "foobar",
-	scope = "project",
-	kind = "string",
-	allowed = {
-		"true",
-		"false",
-	},
-})
 
 --
 -- Decide when the full module should be loaded.
