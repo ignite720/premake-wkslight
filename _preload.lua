@@ -17,7 +17,7 @@ local api = p.api
 --
 newaction({
 	trigger = "clean",
-	description = "clean all intermediate files",
+	description = "Clean up all intermediate files",
 	execute = function()
 		local dirsToDelete = {
 			"bin",
@@ -62,7 +62,7 @@ newaction({
 --
 
 --
--- Decide when the full module should be loaded.
+-- Decide when `thismodule` should be loaded
 --
 return function(cfg)
 	return true
