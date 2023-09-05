@@ -26,6 +26,7 @@ function m.uselibs(libnames)
 		libdirs(libmeta.libdirs)
 		links(libmeta.links)
 		defines(libmeta.defines)
+		debugenvs(libmeta.debugenvs)
 	end
 	
 	filter("action:vs*")
