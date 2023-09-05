@@ -34,7 +34,7 @@ function m.uselibs(libnames)
 		for i, v in ipairs(libnames) do
 			local libmeta = m.workspace.libraries.projects[v]
 			
-			table.insert(localdebugenvs, libmeta.bindir)
+			table.insert(localdebugenvs, libmeta.localdebugenv)
 		end
 		
 		debugenvs({ "$(LocalDebuggerEnvironment)" .. table.concat(localdebugenvs, ";") })
