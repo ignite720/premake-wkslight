@@ -16,7 +16,7 @@ m._VERSION = "0.0.1"
 -- `thismodule` variables and functions
 --
 m.duplet = "%{cfg.platform}/%{cfg.buildcfg}"
-m.triplet = ("%{cfg.system}" .. m.duplet)
+m.triplet = ("%{cfg.system}/" .. m.duplet)
 m.quadruplet = ("%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}")
 
 m.workspacedir = "%{wks.location}/../build"
