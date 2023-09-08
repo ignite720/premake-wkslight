@@ -15,12 +15,12 @@ m._VERSION = "0.0.1"
 --
 -- `thismodule` variables and functions
 --
-m.duplet = "%{cfg.platform}/%{cfg.buildcfg}"
-m.triplet = ("%{cfg.system}/" .. m.duplet)
-m.quadruplet = ("%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}")
+m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
+m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
+m.targetquadra = ("%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}")
 
 m.workspacedir = "%{wks.location}/../build"
-m.targetdir = ("%{wks.location}/../bin/" .. m.duplet)
+m.targetdir = ("%{wks.location}/../bin/" .. m.targetdouble)
 
 function m.uselibs(libnames)
 	for i, v in ipairs(libnames) do
