@@ -17,10 +17,12 @@ m._VERSION = "0.0.1"
 --
 m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
 m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
-m.targetquadra = ("%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}")
+m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
 
-m.workspacedir = "%{wks.location}/../build"
-m.targetdir = ("%{wks.location}/../bin/" .. m.targetdouble)
+m.location = "%{wks.location}/.."
+m.workspacedir = (m.location .. "/build")
+m.targetdir = (m.location .. "/bin/" .. m.targetdouble)
+m.librariesdir = (m.location .. "/libraries")
 
 function m.uselibs(libnames)
 	for i, v in ipairs(libnames) do
