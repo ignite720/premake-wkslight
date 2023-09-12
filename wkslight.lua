@@ -36,14 +36,14 @@ function m.uselibs(libnames)
 	end
 	
 	filter("action:vs*")
-		local localdebugenvs = {}
+		local vslocaldebugenvs = {}
 		for i, v in ipairs(libnames) do
 			local libmeta = m.workspace.libraries.projects[v]
 			
-			table.insert(localdebugenvs, libmeta.localdebugenv)
+			table.insert(vslocaldebugenvs, libmeta.vslocaldebugenv)
 		end
 		
-		debugenvs({ "$(LocalDebuggerEnvironment)" .. table.concat(localdebugenvs, ";") })
+		debugenvs({ "$(LocalDebuggerEnvironment)" .. table.concat(vslocaldebugenvs, ";") })
 	filter({})
 end
 
