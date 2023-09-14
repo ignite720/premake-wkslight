@@ -11,6 +11,9 @@ m._VERSION = "0.0.1"
 --
 -- Local functions
 --
+local function sStrTableToJsonishArray(tbl)
+	return "'[\"" .. table.concat(tbl, "\", \"") .. "\"]'"
+end
 
 --
 -- `thismodule` variables and functions
@@ -45,6 +48,58 @@ function m.uselibs(libnames)
 		
 		debugenvs({ "$(LocalDebuggerEnvironment)" .. table.concat(vslocaldebugenvs, ";") })
 	filter({})
+end
+
+function m.wasmlinkoptions(libnames)
+	for i, v in ipairs(m.extras.wasm.libs) do
+		linkoptions({ "-l" .. v })
+	end
+	
+	if #m.extras.wasm.extra_exported_runtime_methods > 0 then
+		linkoptions({ "-sEXTRA_EXPORTED_RUNTIME_METHODS=" .. sStrTableToJsonishArray(m.extras.wasm.extra_exported_runtime_methods) })
+	end
+	if #m.extras.wasm.exported_functions > 0 then
+		linkoptions({ "-sEXPORTED_FUNCTIONS=" .. sStrTableToJsonishArray(m.extras.wasm.exported_functions) })
+	end
+	
+	if m.extras.wasm.use_pthreads then
+		linkoptions({ "-sUSE_PTHREADS=1" })
+	end
+	if m.extras.wasm.asyncify then
+		linkoptions({ "-sASYNCIFY=1" })
+	end
+	if #m.extras.wasm.asyncify_whitelist > 0 then
+		linkoptions({ "-sASYNCIFY_WHITELIST=" .. sStrTableToJsonishArray(m.extras.wasm.asyncify_whitelist) })
+	end
+	
+	for i, v in ipairs(m.extras.wasm.preload_files) do
+		linkoptions({ "--preload-file " .. v })
+	end
+	
+	if m.extras.wasm.shell_file then
+		linkoptions({ "--shell-file " .. m.extras.wasm.shell_file })
+	end
+	
+	linkoptions({
+		"-sUSE_SDL=2",
+		"-sUSE_SDL_IMAGE=2",
+		"-sUSE_SDL_MIXER=2",
+		"-sUSE_SDL_NET=2",
+		"-sUSE_SDL_TTF=2",
+		"-sSDL2_IMAGE_FORMATS=" .. sStrTableToJsonishArray(m.extras.wasm.image_formats),
+		"-sENVIRONMENT=web",
+		"-sWASM=1",
+		"-sEVAL_CTORS",
+		"-sUSE_WEBGL2=1",
+		"-sFULL_ES2=1",
+		"-sFULL_ES3=1",
+		"-sMIN_WEBGL_VERSION=2",
+		"-sMAX_WEBGL_VERSION=2",
+		"-sOFFSCREEN_FRAMEBUFFER=1",
+		"-sALLOW_MEMORY_GROWTH=1",
+		"--no-heap-copy",
+		"-o " .. m.extras.wasm.output_file,
+	})
 end
 
 include("_preload")
