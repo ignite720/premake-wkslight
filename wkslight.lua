@@ -11,6 +11,38 @@ m._VERSION = "0.0.1"
 --
 -- Local functions
 --
+local function sMakeEnum(tbl)
+	local metatbl = {
+		__index = tbl,
+		__newindex = function(tbl, key, value)
+			error("Attempt to assign or modify the value of an enum, which is a constant.")
+		end
+	}
+	
+	local readonlytbl = {}
+	setmetatable(readonlytbl, metatbl)
+	return readonlytbl
+end
+
+local function sPrintTableValue(v, indent)
+	local variableName = tostring(v)
+	if (type(v) == "table") then
+		for k, v in pairs(v) do
+			if (type(v) == "table") then
+				print(indent .. "[" .. k .. "] => " .. variableName .. " {")
+				
+				sPrintTableValue(v, indent .. "    ")
+			elseif (type(v) == "string") then
+				print(indent .. "[" .. k .. '] => "' .. v  .. '"')
+			else
+				print(indent .. "[" .. k .. "] => " .. tostring(v))
+			end
+		end
+	else
+		print(indent .. variableName)
+	end
+end
+
 local function sStrTableToJsonishArray(tbl)
 	return "'[\"" .. table.concat(tbl, "\", \"") .. "\"]'"
 end
@@ -18,6 +50,20 @@ end
 --
 -- `thismodule` variables and functions
 --
+m.EWASMFlag = sMakeEnum({
+	NONE = 0,
+	USE_ZLIB = 1 << 0,
+	USE_SDL2 = 1 << 1,
+	USE_SDL_IMAGE = 1 << 2,
+	USE_SDL_MIXER = 1 << 3,
+	USE_SDL_NET = 1 << 4,
+	USE_SDL_TTF = 1 << 5,
+	USE_WEBGL2 = 1 << 6,
+	EXPLICIT_SWAP_CONTROL = 1 << 7,
+	ASYNCIFY = 1 << 8,
+	LINK_OPENAL = 1 << 9,
+})
+
 m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
 m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
 m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
@@ -26,6 +72,42 @@ m.location = "%{wks.location}/.."
 m.workspacedir = (m.location .. "/build")
 m.targetdir = (m.location .. "/bin/" .. m.targetdouble)
 m.librariesdir = (m.location .. "/libraries")
+
+function m.makeenum(tbl)
+	return sMakeEnum(tbl)
+end
+
+function m.tableprint(tbl)
+	if (type(tbl) ~= "table") then
+		return
+	end
+	
+	print(tostring(tbl) .. " {")
+	sPrintTableValue(tbl, "  ")
+	print("}\n")
+end
+
+function m.tablemerge(tbl, tbl2)
+	for _, v in ipairs(tbl2) do
+		table.insert(tbl, v)
+	end
+end
+
+function m.bitmaskset(bmask, flag)
+	return bmask | flag
+end
+
+function m.bitmaskreset(bmask, flag)
+	return bmask & ~flag
+end
+
+function m.bitmaskflip(bmask, flag)
+	return bmask ~ flag
+end
+
+function m.bitmasktest(bmask, flag)
+	return (bmask & flag) ~= 0
+end
 
 function m.uselibs(libnames)
 	for i, v in ipairs(libnames) do
@@ -55,21 +137,65 @@ function m.wasmlinkoptions(libnames)
 		linkoptions({ "-l" .. v })
 	end
 	
-	if #m.extras.wasm.extra_exported_runtime_methods > 0 then
-		linkoptions({ "-sEXTRA_EXPORTED_RUNTIME_METHODS=" .. sStrTableToJsonishArray(m.extras.wasm.extra_exported_runtime_methods) })
-	end
-	if #m.extras.wasm.exported_functions > 0 then
-		linkoptions({ "-sEXPORTED_FUNCTIONS=" .. sStrTableToJsonishArray(m.extras.wasm.exported_functions) })
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_ZLIB) then
+		linkoptions({ "-sUSE_ZLIB=1" })
 	end
 	
-	if m.extras.wasm.use_pthreads then
-		linkoptions({ "-sUSE_PTHREADS=1" })
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL2) then
+		linkoptions({ "-sUSE_SDL=2" })
+	end	
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_IMAGE) then
+		linkoptions({
+			"-sUSE_SDL_IMAGE=2",
+			"-sSDL2_IMAGE_FORMATS=" .. sStrTableToJsonishArray(m.extras.wasm.image_formats),
+		})
 	end
-	if m.extras.wasm.asyncify then
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_MIXER) then
+		linkoptions({ "-sUSE_SDL_MIXER=2" })
+	end
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_NET) then
+		linkoptions({ "-sUSE_SDL_NET=2" })
+	end
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_TTF) then
+		linkoptions({ "-sUSE_SDL_TTF=2" })
+	end
+	
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_WEBGL2) then
+		linkoptions({
+			"-sUSE_WEBGL2=1",
+			"-sFULL_ES2=1",
+			"-sFULL_ES3=1",
+			"-sMIN_WEBGL_VERSION=2",
+			"-sMAX_WEBGL_VERSION=2",
+		})
+	end
+	
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.EXPLICIT_SWAP_CONTROL) then
+		linkoptions({
+			"-sOFFSCREENCANVAS_SUPPORT",
+		})
+	end
+	
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.ASYNCIFY) then
 		linkoptions({ "-sASYNCIFY=1" })
+	else
+		--linkoptions({ "-sEVAL_CTORS" })
 	end
 	if #m.extras.wasm.asyncify_whitelist > 0 then
 		linkoptions({ "-sASYNCIFY_WHITELIST=" .. sStrTableToJsonishArray(m.extras.wasm.asyncify_whitelist) })
+	end
+	
+	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.LINK_OPENAL) then
+		linkoptions({
+			"-lopenal",
+		})
+	end
+	
+	if #m.extras.wasm.exported_runtime_methods > 0 then
+		linkoptions({ "-sEXPORTED_RUNTIME_METHODS=" .. sStrTableToJsonishArray(m.extras.wasm.exported_runtime_methods) })
+	end
+	if #m.extras.wasm.exported_functions > 0 then
+		linkoptions({ "-sEXPORTED_FUNCTIONS=" .. sStrTableToJsonishArray(m.extras.wasm.exported_functions) })
 	end
 	
 	for i, v in ipairs(m.extras.wasm.preload_files) do
@@ -81,21 +207,8 @@ function m.wasmlinkoptions(libnames)
 	end
 	
 	linkoptions({
-		"-sUSE_SDL=2",
-		"-sUSE_SDL_IMAGE=2",
-		"-sUSE_SDL_MIXER=2",
-		"-sUSE_SDL_NET=2",
-		"-sUSE_SDL_TTF=2",
-		"-sSDL2_IMAGE_FORMATS=" .. sStrTableToJsonishArray(m.extras.wasm.image_formats),
-		"-sENVIRONMENT=web",
 		"-sWASM=1",
-		"-sEVAL_CTORS",
-		"-sUSE_WEBGL2=1",
-		"-sFULL_ES2=1",
-		"-sFULL_ES3=1",
-		"-sMIN_WEBGL_VERSION=2",
-		"-sMAX_WEBGL_VERSION=2",
-		"-sOFFSCREEN_FRAMEBUFFER=1",
+		"-sFETCH",
 		"-sALLOW_MEMORY_GROWTH=1",
 		"--no-heap-copy",
 		"-o " .. m.extras.wasm.output_file,
