@@ -132,35 +132,35 @@ function m.uselibs(libnames)
 	filter({})
 end
 
-function m.wasmlinkoptions(libnames)
-	for i, v in ipairs(m.extras.wasm.libs) do
+function m.wasmlinkoptions(opts)
+	for i, v in ipairs(opts.libs) do
 		linkoptions({ "-l" .. v })
 	end
 	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_ZLIB) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_ZLIB) then
 		linkoptions({ "-sUSE_ZLIB=1" })
 	end
 	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL2) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_SDL2) then
 		linkoptions({ "-sUSE_SDL=2" })
 	end	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_IMAGE) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_SDL_IMAGE) then
 		linkoptions({
 			"-sUSE_SDL_IMAGE=2",
-			"-sSDL2_IMAGE_FORMATS=" .. sStrTableToJsonishArray(m.extras.wasm.image_formats),
+			"-sSDL2_IMAGE_FORMATS=" .. sStrTableToJsonishArray(opts.image_formats),
 		})
 	end
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_MIXER) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_SDL_MIXER) then
 		linkoptions({ "-sUSE_SDL_MIXER=2" })
 	end
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_NET) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_SDL_NET) then
 		linkoptions({ "-sUSE_SDL_NET=2" })
 	end
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_SDL_TTF) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_SDL_TTF) then
 		linkoptions({ "-sUSE_SDL_TTF=2" })
 	end
 	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.USE_WEBGL2) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.USE_WEBGL2) then
 		linkoptions({
 			"-sUSE_WEBGL2=1",
 			"-sFULL_ES2=1",
@@ -170,40 +170,40 @@ function m.wasmlinkoptions(libnames)
 		})
 	end
 	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.EXPLICIT_SWAP_CONTROL) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.EXPLICIT_SWAP_CONTROL) then
 		linkoptions({
 			"-sOFFSCREENCANVAS_SUPPORT",
 		})
 	end
 	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.ASYNCIFY) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.ASYNCIFY) then
 		linkoptions({ "-sASYNCIFY=1" })
 	else
 		--linkoptions({ "-sEVAL_CTORS" })
 	end
-	if #m.extras.wasm.asyncify_whitelist > 0 then
-		linkoptions({ "-sASYNCIFY_WHITELIST=" .. sStrTableToJsonishArray(m.extras.wasm.asyncify_whitelist) })
+	if #opts.asyncify_whitelist > 0 then
+		linkoptions({ "-sASYNCIFY_WHITELIST=" .. sStrTableToJsonishArray(opts.asyncify_whitelist) })
 	end
 	
-	if m.bitmasktest(m.extras.wasm.flags, m.EWASMFlag.LINK_OPENAL) then
+	if m.bitmasktest(opts.flags, m.EWASMFlag.LINK_OPENAL) then
 		linkoptions({
 			"-lopenal",
 		})
 	end
 	
-	if #m.extras.wasm.exported_runtime_methods > 0 then
-		linkoptions({ "-sEXPORTED_RUNTIME_METHODS=" .. sStrTableToJsonishArray(m.extras.wasm.exported_runtime_methods) })
+	if #opts.exported_runtime_methods > 0 then
+		linkoptions({ "-sEXPORTED_RUNTIME_METHODS=" .. sStrTableToJsonishArray(opts.exported_runtime_methods) })
 	end
-	if #m.extras.wasm.exported_functions > 0 then
-		linkoptions({ "-sEXPORTED_FUNCTIONS=" .. sStrTableToJsonishArray(m.extras.wasm.exported_functions) })
+	if #opts.exported_functions > 0 then
+		linkoptions({ "-sEXPORTED_FUNCTIONS=" .. sStrTableToJsonishArray(opts.exported_functions) })
 	end
 	
-	for i, v in ipairs(m.extras.wasm.preload_files) do
+	for i, v in ipairs(opts.preload_files) do
 		linkoptions({ "--preload-file " .. v })
 	end
 	
-	if m.extras.wasm.shell_file then
-		linkoptions({ "--shell-file " .. m.extras.wasm.shell_file })
+	if opts.shell_file then
+		linkoptions({ "--shell-file " .. opts.shell_file })
 	end
 	
 	linkoptions({
@@ -211,7 +211,7 @@ function m.wasmlinkoptions(libnames)
 		"-sFETCH",
 		"-sALLOW_MEMORY_GROWTH=1",
 		"--no-heap-copy",
-		"-o " .. m.extras.wasm.output_file,
+		"-o " .. opts.output_file,
 	})
 end
 
