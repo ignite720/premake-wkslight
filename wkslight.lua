@@ -24,14 +24,14 @@ local function sMakeEnum(tbl)
 	return readonlytbl
 end
 
-local function sPrintTableValue(v, indent)
+local function sTablePrint(v, indent)
 	local variableName = tostring(v)
 	if (type(v) == "table") then
 		for k, v in pairs(v) do
 			if (type(v) == "table") then
 				print(indent .. "[" .. k .. "] => " .. variableName .. " {")
 				
-				sPrintTableValue(v, indent .. "    ")
+				sTablePrint(v, indent .. "    ")
 			elseif (type(v) == "string") then
 				print(indent .. "[" .. k .. '] => "' .. v  .. '"')
 			else
@@ -83,7 +83,7 @@ function m.tableprint(tbl)
 	end
 	
 	print(tostring(tbl) .. " {")
-	sPrintTableValue(tbl, "  ")
+	sTablePrint(tbl, "  ")
 	print("}\n")
 end
 
