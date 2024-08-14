@@ -11,6 +11,18 @@ m._VERSION = "0.0.1"
 --
 -- Local functions
 --
+local function s_isfunction(value)
+    return type(value) == "function"
+end
+
+local function s_isstring(value)
+    return type(value) == "string"
+end
+
+local function s_istable(value)
+    return type(value) == "table"
+end
+
 local function s_make_enum(tbl)
     local metatbl = {
         __index = tbl,
@@ -26,13 +38,13 @@ end
 
 local function s_table_print(v, indent)
     local variableName = tostring(v)
-    if (type(v) == "table") then
+    if s_istable(v) then
         for k, v in pairs(v) do
-            if (type(v) == "table") then
+            if s_istable(v) then
                 print(indent .. "[" .. k .. "] => " .. variableName .. " {")
                 
                 s_table_print(v, indent .. "    ")
-            elseif (type(v) == "string") then
+            elseif s_isstring(v) then
                 print(indent .. "[" .. k .. '] => "' .. v  .. '"')
             else
                 print(indent .. "[" .. k .. "] => " .. tostring(v))
@@ -64,6 +76,7 @@ m.EWasmFlag = s_make_enum({
     LINK_OPENAL = 1 << 9,
 })
 
+-- built-in variables composed from `Value Tokens`
 m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
 m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
 m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
@@ -73,12 +86,29 @@ m.workspacedir = (m.location .. "/build")
 m.targetdir = (m.location .. "/bin/" .. m.targetdouble)
 m.librariesdir = (m.location .. "/libraries")
 
+function m.hasattr(object_, name_)
+    return object_[name_] ~= nil
+end
+
+function m.isfunction(value)
+    return s_isfunction(value)
+end
+
+function m.isstring(value)
+    return s_isstring(value)
+end
+
+function m.istable(value)
+    return s_istable(value)
+end
+
 function m.makeenum(tbl)
     return s_make_enum(tbl)
 end
 
+-- table.tostring
 function m.tableprint(tbl)
-    if (type(tbl) ~= "table") then
+    if not s_istable(tbl) then
         return
     end
     
@@ -114,8 +144,16 @@ function m.libs(libnames)
         assert(string.find(v, '-') == nil, string.format("Identifier(%s) cannot contain '-', as most programming languages do not consider it a valid identifier.", v))
 
         local libmeta = m.workspace.libraries.projects[v]
-        includedirs(libmeta.includedirs)
-        libdirs(libmeta.libdirs)
+        local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
+        if s_isfunction(libmeta.additionalincludedirs) then
+            include_dirs = table.join(include_dirs, libmeta.additionalincludedirs())
+        end
+        if s_isfunction(libmeta.additionallibdirs) then
+            lib_dirs = table.join(lib_dirs, libmeta.additionallibdirs())
+        end
+
+        includedirs(include_dirs)
+        libdirs(lib_dirs)
         links(libmeta.links)
         defines(libmeta.defines)
         debugenvs(libmeta.debugenvs)
