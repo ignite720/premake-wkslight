@@ -135,8 +135,12 @@ function m.bitmaskflip(bmask, flag)
     return bmask ~ flag
 end
 
-function m.bitmasktest(bmask, flag)
+function m.bitmasktestany(bmask, flag)
     return (bmask & flag) ~= 0
+end
+
+function m.bitmasktestall(bmask, flag)
+    return (bmask & flag) == flag
 end
 
 function m.libs(libnames)
@@ -176,30 +180,30 @@ function m.wasmlinkoptions(opts)
         linkoptions({ "-l" .. v })
     end
     
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_ZLIB) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_ZLIB) then
         linkoptions({ "-sUSE_ZLIB=1" })
     end
     
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_SDL2) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL2) then
         linkoptions({ "-sUSE_SDL=2" })
     end 
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_SDL_IMAGE) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL_IMAGE) then
         linkoptions({
             "-sUSE_SDL_IMAGE=2",
             "-sSDL2_IMAGE_FORMATS=" .. s_str_table_to_jsonish_array(opts.image_formats),
         })
     end
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_SDL_MIXER) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL_MIXER) then
         linkoptions({ "-sUSE_SDL_MIXER=2" })
     end
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_SDL_NET) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL_NET) then
         linkoptions({ "-sUSE_SDL_NET=2" })
     end
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_SDL_TTF) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL_TTF) then
         linkoptions({ "-sUSE_SDL_TTF=2" })
     end
     
-    if m.bitmasktest(opts.flags, m.EWasmFlag.USE_WEBGL2) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_WEBGL2) then
         linkoptions({
             "-sUSE_WEBGL2=1",
             "-sFULL_ES2=1",
@@ -209,13 +213,13 @@ function m.wasmlinkoptions(opts)
         })
     end
     
-    if m.bitmasktest(opts.flags, m.EWasmFlag.EXPLICIT_SWAP_CONTROL) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.EXPLICIT_SWAP_CONTROL) then
         linkoptions({
             "-sOFFSCREENCANVAS_SUPPORT",
         })
     end
     
-    if m.bitmasktest(opts.flags, m.EWasmFlag.ASYNCIFY) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.ASYNCIFY) then
         linkoptions({ "-sASYNCIFY=1" })
     else
         --linkoptions({ "-sEVAL_CTORS" })
@@ -224,7 +228,7 @@ function m.wasmlinkoptions(opts)
         linkoptions({ "-sASYNCIFY_WHITELIST=" .. s_str_table_to_jsonish_array(opts.asyncify_whitelist) })
     end
     
-    if m.bitmasktest(opts.flags, m.EWasmFlag.LINK_OPENAL) then
+    if m.bitmasktestany(opts.flags, m.EWasmFlag.LINK_OPENAL) then
         linkoptions({
             "-lopenal",
         })
