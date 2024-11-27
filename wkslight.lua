@@ -176,6 +176,10 @@ function m.libs(libnames)
 end
 
 function m.wasmlinkoptions(opts)
+    if opts.em_config then
+        linkoptions({ "--em-config " .. opts.em_config })
+    end
+
     for i, v in ipairs(opts.libs) do
         linkoptions({ "-l" .. v })
     end
