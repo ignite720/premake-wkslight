@@ -81,9 +81,10 @@ m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
 m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
 m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
 
+-- wks.location: where the workspace/solution is written, not the premake-wks.lua file
 m.location = "%{wks.location}/.."
 m.workspacedir = (m.location .. "/build")
-m.targetdir = (m.location .. "/bin/" .. m.targetdouble)
+m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
 m.librariesdir = (m.location .. "/libraries")
 
 function m.hasattr(object_, name_)
