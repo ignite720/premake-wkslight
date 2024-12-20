@@ -85,6 +85,7 @@ m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
 m.location = "%{wks.location}/.."
 m.workspacedir = (m.location .. "/build")
 m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
+m.baseobjsdir = (m.targetdir .. "/objs")
 m.librariesdir = (m.location .. "/libraries")
 
 function m.hasattr(object_, name_)
