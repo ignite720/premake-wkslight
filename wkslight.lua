@@ -90,7 +90,14 @@ m.baseobjdirs = {
     m.targetdir .. "/objs/libraries",
     m.targetdir .. "/objs/foo",
     m.targetdir .. "/objs/bar",
+    m.targetdir .. "/objs/baz",
     m.targetdir .. "/objs/qux",
+    m.targetdir .. "/objs/quux",
+    m.targetdir .. "/objs/corge",
+    m.targetdir .. "/objs/grault",
+    m.targetdir .. "/objs/garply",
+    m.targetdir .. "/objs/waldo",
+    m.targetdir .. "/objs/fred",
 }
 m.librariesdir = (m.location .. "/libraries")
 
