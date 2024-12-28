@@ -85,19 +85,20 @@ m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
 m.location = "%{wks.location}/.."
 m.workspacedir = (m.location .. "/build")
 m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
+m.baseobjdir = (m.targetdir .. "/objs")
 m.baseobjdirs = {
-    m.targetdir .. "/objs/projects",
-    m.targetdir .. "/objs/libraries",
-    m.targetdir .. "/objs/foo",
-    m.targetdir .. "/objs/bar",
-    m.targetdir .. "/objs/baz",
-    m.targetdir .. "/objs/qux",
-    m.targetdir .. "/objs/quux",
-    m.targetdir .. "/objs/corge",
-    m.targetdir .. "/objs/grault",
-    m.targetdir .. "/objs/garply",
-    m.targetdir .. "/objs/waldo",
-    m.targetdir .. "/objs/fred",
+    m.baseobjdir .. "/projects",
+    m.baseobjdir .. "/libraries",
+    m.baseobjdir .. "/foo",
+    m.baseobjdir .. "/bar",
+    m.baseobjdir .. "/baz",
+    m.baseobjdir .. "/qux",
+    m.baseobjdir .. "/quux",
+    m.baseobjdir .. "/corge",
+    m.baseobjdir .. "/grault",
+    m.baseobjdir .. "/garply",
+    m.baseobjdir .. "/waldo",
+    m.baseobjdir .. "/fred",
 }
 m.librariesdir = (m.location .. "/libraries")
 
