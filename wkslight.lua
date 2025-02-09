@@ -49,7 +49,7 @@ m.makereadonlytbl = (function()
             if not proxy then
                 proxy = setmetatable({}, {
                     __index = function(tbl, key)
-                        return m.makereadonlytbl(tbl[key])
+                        return m.makereadonlytbl(v[key])
                     end,
                     __newindex = function(tbl, key, value)
                         error(string.format("Attempt to update a read-only table: [%s].%s", tbl, key), 2)
