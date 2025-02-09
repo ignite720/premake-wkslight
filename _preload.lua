@@ -2,7 +2,7 @@
 -- Name:        thismodule/_preload.lua
 -- Purpose:     Define the `thismodule` APIs
 -- Author:      ignite720
--- Copyright:   (c) 2002-2024 Jason Perkins and the Premake project
+-- Copyright:   (c) 2002-2025 Jason Perkins and the Premake project
 --
 
 local p = premake

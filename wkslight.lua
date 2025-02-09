@@ -11,47 +11,22 @@ m._VERSION = "0.0.1"
 --
 -- Local functions
 --
-local function s_isfunction(value)
-    return type(value) == "function"
-end
-
-local function s_isstring(value)
-    return type(value) == "string"
-end
-
-local function s_istable(value)
-    return type(value) == "table"
-end
-
-local function s_make_enum(tbl)
-    local metatbl = {
-        __index = tbl,
-        __newindex = function(tbl, key, value)
-            error("Attempt to assign or modify the value of an enum, which is a constant.")
-        end
-    }
-    
-    local readonlytbl = {}
-    setmetatable(readonlytbl, metatbl)
-    return readonlytbl
-end
-
 local function s_table_print(v, indent)
-    local variableName = tostring(v)
-    if s_istable(v) then
+    local variable_name = tostring(v)
+    if type(v) == "table" then
         for k, v in pairs(v) do
-            if s_istable(v) then
-                print(indent .. "[" .. k .. "] => " .. variableName .. " {")
+            if type(v) == "table" then
+                print(indent .. "[" .. k .. "] => " .. variable_name .. " {")
                 
                 s_table_print(v, indent .. "    ")
-            elseif s_isstring(v) then
+            elseif type(v) == "string" then
                 print(indent .. "[" .. k .. '] => "' .. v  .. '"')
             else
                 print(indent .. "[" .. k .. "] => " .. tostring(v))
             end
         end
     else
-        print(indent .. variableName)
+        print(indent .. variable_name)
     end
 end
 
@@ -62,71 +37,39 @@ end
 --
 -- `thismodule` variables and functions
 --
-m.EWasmFlag = s_make_enum({
-    NONE = 0,
-    USE_ZLIB = 1 << 0,
-    USE_SDL2 = 1 << 1,
-    USE_SDL_IMAGE = 1 << 2,
-    USE_SDL_MIXER = 1 << 3,
-    USE_SDL_NET = 1 << 4,
-    USE_SDL_TTF = 1 << 5,
-    USE_WEBGL2 = 1 << 6,
-    EXPLICIT_SWAP_CONTROL = 1 << 7,
-    ASYNCIFY = 1 << 8,
-    LINK_OPENAL = 1 << 9,
-})
-
--- built-in variables composed from `Value Tokens`
-m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
-m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
-m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
-
--- wks.location: where the workspace/solution is written, not the premake-wks.lua file
-m.location = "%{wks.location}/.."
-m.workspacedir = (m.location .. "/build")
-m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
-m.baseobjdir = (m.targetdir .. "/objs")
-m.baseobjdirs = {
-    m.baseobjdir .. "/projects",
-    m.baseobjdir .. "/libraries",
-    m.baseobjdir .. "/foo",
-    m.baseobjdir .. "/bar",
-    m.baseobjdir .. "/baz",
-    m.baseobjdir .. "/qux",
-    m.baseobjdir .. "/quux",
-    m.baseobjdir .. "/corge",
-    m.baseobjdir .. "/grault",
-    m.baseobjdir .. "/garply",
-    m.baseobjdir .. "/waldo",
-    m.baseobjdir .. "/fred",
-}
-m.librariesdir = (m.location .. "/libraries")
-
 function m.hasattr(object_, name_)
     return object_[name_] ~= nil
 end
 
-function m.isfunction(value)
-    return s_isfunction(value)
-end
-
-function m.isstring(value)
-    return s_isstring(value)
-end
-
-function m.istable(value)
-    return s_istable(value)
-end
-
-function m.makeenum(tbl)
-    return s_make_enum(tbl)
-end
+m.makereadonlytbl = (function()
+    assert(type(tbl) == "table")
+    
+    local proxies = setmetatable({}, { __mode = "k" })
+    return function(v)
+        if type(v) == "table" then
+            local proxy = proxies[v]
+            if not proxy then
+                proxy = setmetatable({}, {
+                    __index = function(tbl, key)
+                        return m.makereadonlytbl(tbl[key])
+                    end,
+                    __newindex = function(tbl, key, value)
+                        error(string.format("Attempt to update a read-only table: [%s].%s", tbl, key), 2)
+                    end,
+                    __metatable = false,
+                })
+                proxies[v] = proxy
+            end
+            return proxy
+        else
+            return v
+        end
+    end
+end)()
 
 -- table.tostring
 function m.tableprint(tbl)
-    if not s_istable(tbl) then
-        return
-    end
+    assert(type(tbl) == "table")
     
     print(tostring(tbl) .. " {")
     s_table_print(tbl, "  ")
@@ -165,10 +108,10 @@ function m.libs(libnames)
 
         local libmeta = m.workspace.libraries.projects[v]
         local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
-        if s_isfunction(libmeta.additionalincludedirs) then
+        if type(libmeta.additionalincludedirs) == "function" then
             include_dirs = table.join(include_dirs, libmeta.additionalincludedirs())
         end
-        if s_isfunction(libmeta.additionallibdirs) then
+        if type(libmeta.additionallibdirs) == "function" then
             lib_dirs = table.join(lib_dirs, libmeta.additionallibdirs())
         end
 
@@ -281,6 +224,46 @@ function m.wasmlinkoptions(opts)
         "-o " .. opts.output_file,
     })
 end
+
+m.EWasmFlag = m.makereadonlytbl({
+    NONE = 0,
+    USE_ZLIB = 1 << 0,
+    USE_SDL2 = 1 << 1,
+    USE_SDL_IMAGE = 1 << 2,
+    USE_SDL_MIXER = 1 << 3,
+    USE_SDL_NET = 1 << 4,
+    USE_SDL_TTF = 1 << 5,
+    USE_WEBGL2 = 1 << 6,
+    EXPLICIT_SWAP_CONTROL = 1 << 7,
+    ASYNCIFY = 1 << 8,
+    LINK_OPENAL = 1 << 9,
+})
+
+-- built-in variables composed from `Value Tokens`
+m.targetdouble = "%{cfg.platform}/%{cfg.buildcfg}"
+m.targettriple = ("%{cfg.system}/" .. m.targetdouble)
+m.targetquadra = "%{cfg.architecture}/vendor/%{cfg.system}/%{cfg.buildcfg}"
+
+-- wks.location(location where the workspace/solution is written, not the premake-wks.lua file)
+m.location = "%{wks.location}/.."
+m.workspacedir = (m.location .. "/build")
+m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
+m.baseobjdir = (m.targetdir .. "/objs")
+m.baseobjdirs = {
+    m.baseobjdir .. "/projects",
+    m.baseobjdir .. "/libraries",
+    m.baseobjdir .. "/foo",
+    m.baseobjdir .. "/bar",
+    m.baseobjdir .. "/baz",
+    m.baseobjdir .. "/qux",
+    m.baseobjdir .. "/quux",
+    m.baseobjdir .. "/corge",
+    m.baseobjdir .. "/grault",
+    m.baseobjdir .. "/garply",
+    m.baseobjdir .. "/waldo",
+    m.baseobjdir .. "/fred",
+}
+m.librariesdir = (m.location .. "/libraries")
 
 include("_preload")
 return m
