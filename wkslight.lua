@@ -42,8 +42,6 @@ function m.hasattr(object_, name_)
 end
 
 m.makereadonlytbl = (function()
-    assert(type(tbl) == "table")
-    
     local proxies = setmetatable({}, { __mode = "k" })
     return function(v)
         if type(v) == "table" then
