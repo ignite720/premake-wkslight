@@ -80,6 +80,10 @@ function m.tablemerge(tbl, tbl2)
     end
 end
 
+function m.table2jsonisharray(tbl)
+    return s_str_table_to_jsonish_array(tbl)
+end
+
 function m.bitmaskset(bmask, flag)
     return bmask | flag
 end
@@ -102,8 +106,6 @@ end
 
 function m.libs(libnames)
     for i, v in ipairs(libnames) do
-        assert(string.find(v, '-') == nil, string.format("Identifier(%s) cannot contain '-', as most programming languages do not consider it a valid identifier.", v))
-
         local libmeta = m.workspace.libraries.projects[v]
         local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
         if type(libmeta.additionalincludedirs) == "function" then
