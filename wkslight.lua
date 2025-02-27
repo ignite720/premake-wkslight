@@ -128,6 +128,7 @@ function m.libs(libnames)
     for i, v in ipairs(libnames) do
         local libmeta = m.workspace.libraries.projects[v]
         local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
+
         if type(libmeta.additionalincludedirs) == "function" then
             include_dirs = table.join(include_dirs, libmeta.additionalincludedirs())
         end
@@ -271,7 +272,7 @@ m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
 m.baseobjdir = (m.targetdir .. "/objs")
 m.librariesdir = (m.location .. "/libraries")
 m.placeholders = {
-    "projects",
+    "",
     "libraries",
     "foo",
     "bar",
