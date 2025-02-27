@@ -269,21 +269,21 @@ m.location = "%{wks.location}/.."
 m.workspacedir = (m.location .. "/build")
 m.targetdir = (m.location .. "/bin/target/" .. m.targetdouble)
 m.baseobjdir = (m.targetdir .. "/objs")
-m.baseobjdirs = {
-    m.baseobjdir .. "/projects",
-    m.baseobjdir .. "/libraries",
-    m.baseobjdir .. "/foo",
-    m.baseobjdir .. "/bar",
-    m.baseobjdir .. "/baz",
-    m.baseobjdir .. "/qux",
-    m.baseobjdir .. "/quux",
-    m.baseobjdir .. "/corge",
-    m.baseobjdir .. "/grault",
-    m.baseobjdir .. "/garply",
-    m.baseobjdir .. "/waldo",
-    m.baseobjdir .. "/fred",
-}
 m.librariesdir = (m.location .. "/libraries")
+m.placeholders = {
+    "projects",
+    "libraries",
+    "foo",
+    "bar",
+    "baz",
+    "qux",
+    "quux",
+    "corge",
+    "grault",
+    "garply",
+    "waldo",
+    "fred",
+}
 
 include("_preload")
 return m
