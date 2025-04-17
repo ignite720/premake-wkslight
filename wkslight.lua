@@ -55,6 +55,23 @@ m.makereadonlytbl = (function()
                         error(string.format("Attempt to update a read-only table: [%s].%s", tbl, key), 2)
                     end,
                     __metatable = false,
+                    __len = function()
+                        return #v
+                    end,
+                    __ipairs = function()
+                        --return ipairs(v)
+                        local i = 0
+                        return function()
+                            i = (i + 1)
+                            if v[i] ~= nil then
+                                return i, m.makereadonlytbl(v[i])
+                            end
+                        end
+                    end,
+                    __pairs = function()
+                        --return pairs(v)
+                        return next, v, nil
+                    end,
                 })
                 proxies[v] = proxy
             end
