@@ -11,14 +11,14 @@ m._VERSION = "0.0.1"
 --
 -- Local functions
 --
-local function __table_print(v, indent)
+local function s_table_print(v, indent)
     local variable_name = tostring(v)
     if type(v) == "table" then
         for k, v in pairs(v) do
             if type(v) == "table" then
                 print(indent .. "[" .. k .. "] => " .. variable_name .. " {")
                 
-                __table_print(v, indent .. "    ")
+                s_table_print(v, indent .. "    ")
             elseif type(v) == "string" then
                 print(indent .. "[" .. k .. '] => "' .. v  .. '"')
             else
@@ -30,7 +30,7 @@ local function __table_print(v, indent)
     end
 end
 
-local function __table_to_jsonish_array(tbl)
+local function s_table_to_jsonish_array(tbl)
     return "'[\"" .. table.concat(tbl, "\", \"") .. "\"]'"
 end
 
@@ -70,7 +70,7 @@ function m.tableprint(tbl)
     assert(type(tbl) == "table")
     
     print(tostring(tbl) .. " {")
-    __table_print(tbl, "  ")
+    s_table_print(tbl, "  ")
     print("}\n")
 end
 
@@ -78,10 +78,10 @@ function m.tableflatten(tbl)
     assert(type(tbl) == "table")
 
     local result = {}
-    local __tableflatten = function(t)
+    local lam_tableflatten = function(t)
         for k, v in pairs(t) do
             if type(v) == "table" then
-                __tableflatten(v)
+                lam_tableflatten(v)
             else
                 if k ~= "n" then
                     table.insert(result, v)
@@ -90,7 +90,7 @@ function m.tableflatten(tbl)
         end
     end
 
-    __tableflatten(tbl)
+    lam_tableflatten(tbl)
     return result
 end
 
@@ -101,7 +101,7 @@ function m.tablemerge(tbl, tbl2)
 end
 
 function m.table2jsonisharray(tbl)
-    return __table_to_jsonish_array(tbl)
+    return s_table_to_jsonish_array(tbl)
 end
 
 function m.bitmaskset(bmask, flag)
@@ -142,7 +142,10 @@ function m.libs(libnames)
         defines(libmeta.defines)
         debugenvs(libmeta.debugenvs)
     end
-    
+end
+
+function m.libs_executable(libnames)
+    m.libs(libnames)
     filter("action:vs*")
         local vslocaldebugenvs = {}
         for i, v in ipairs(libnames) do
@@ -174,7 +177,7 @@ function m.wasmlinkoptions(opts)
     if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL_IMAGE) then
         linkoptions({
             "-sUSE_SDL_IMAGE=2",
-            "-sSDL2_IMAGE_FORMATS=" .. __table_to_jsonish_array(opts.image_formats),
+            "-sSDL2_IMAGE_FORMATS=" .. s_table_to_jsonish_array(opts.image_formats),
         })
     end
     if m.bitmasktestany(opts.flags, m.EWasmFlag.USE_SDL_MIXER) then
@@ -209,7 +212,7 @@ function m.wasmlinkoptions(opts)
         --linkoptions({ "-sEVAL_CTORS" })
     end
     if #opts.asyncify_whitelist > 0 then
-        linkoptions({ "-sASYNCIFY_WHITELIST=" .. __table_to_jsonish_array(opts.asyncify_whitelist) })
+        linkoptions({ "-sASYNCIFY_WHITELIST=" .. s_table_to_jsonish_array(opts.asyncify_whitelist) })
     end
     
     if m.bitmasktestany(opts.flags, m.EWasmFlag.LINK_OPENAL) then
@@ -219,10 +222,10 @@ function m.wasmlinkoptions(opts)
     end
     
     if #opts.exported_runtime_methods > 0 then
-        linkoptions({ "-sEXPORTED_RUNTIME_METHODS=" .. __table_to_jsonish_array(opts.exported_runtime_methods) })
+        linkoptions({ "-sEXPORTED_RUNTIME_METHODS=" .. s_table_to_jsonish_array(opts.exported_runtime_methods) })
     end
     if #opts.exported_functions > 0 then
-        linkoptions({ "-sEXPORTED_FUNCTIONS=" .. __table_to_jsonish_array(opts.exported_functions) })
+        linkoptions({ "-sEXPORTED_FUNCTIONS=" .. s_table_to_jsonish_array(opts.exported_functions) })
     end
     
     for i, v in ipairs(opts.preload_files) do
