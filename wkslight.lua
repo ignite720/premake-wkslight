@@ -112,6 +112,10 @@ function m.tableflatten(tbl)
 end
 
 function m.tablemerge(tbl, tbl2)
+    if not tbl2 then
+        return
+    end
+
     for _, v in ipairs(tbl2) do
         table.insert(tbl, v)
     end
@@ -141,23 +145,39 @@ function m.bitmasktestall(bmask, flag)
     return (bmask & flag) == flag
 end
 
+function m.isenabled(v)
+    local enabled = true
+    if v.enabled ~= nil then
+        if type(v.enabled) == "boolean" then
+            enabled = v.enabled
+        elseif type(v.enabled) == "function" then
+            enabled = v.enabled()
+        else
+            assert(false)
+        end
+    end
+    return enabled
+end
+
 function m.libs(libnames)
     for i, v in ipairs(libnames) do
         local libmeta = m.workspace.libraries.projects[v]
-        local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
 
-        if type(libmeta.additionalincludedirs) == "function" then
-            include_dirs = table.join(include_dirs, libmeta.additionalincludedirs())
-        end
-        if type(libmeta.additionallibdirs) == "function" then
-            lib_dirs = table.join(lib_dirs, libmeta.additionallibdirs())
-        end
+        if m.isenabled(libmeta) then
+            local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
+            if type(libmeta.additionalincludedirs) == "function" then
+                include_dirs = table.join(include_dirs, libmeta.additionalincludedirs())
+            end
+            if type(libmeta.additionallibdirs) == "function" then
+                lib_dirs = table.join(lib_dirs, libmeta.additionallibdirs())
+            end
 
-        includedirs(include_dirs)
-        libdirs(lib_dirs)
-        links(libmeta.links)
-        defines(libmeta.defines)
-        debugenvs(libmeta.debugenvs)
+            includedirs(include_dirs)
+            libdirs(lib_dirs)
+            links(libmeta.links)
+            defines(libmeta.defines)
+            debugenvs(libmeta.debugenvs)
+        end
     end
 end
 
@@ -167,11 +187,14 @@ function m.libs_executable(libnames)
         local vslocaldebugenvs = {}
         for i, v in ipairs(libnames) do
             local libmeta = m.workspace.libraries.projects[v]
-            
-            table.insert(vslocaldebugenvs, libmeta.vslocaldebugenv)
+
+            m.tablemerge(vslocaldebugenvs, libmeta.vslocaldebugenv)
         end
-        
-        debugenvs({ "$(LocalDebuggerEnvironment)" .. table.concat(vslocaldebugenvs, ";") })
+
+        debugenvs({
+            "$(LocalDebuggerEnvironment)",
+            string.format("PATH=%s;%%PATH%%", table.concat(vslocaldebugenvs, ";")),
+        })
     filter({})
 end
 

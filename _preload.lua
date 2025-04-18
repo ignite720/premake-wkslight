@@ -19,38 +19,21 @@ newaction({
     trigger = "clean",
     description = "Clean up all intermediate files",
     execute = function()
-        local dirs_to_delete = {
-            "bin",
-            "build",
-            ".vs",
-        }
-        local files_to_delete = {
-            "*.Makefile",
-            "*.make",
-            "*.db",
-            "*.opendb",
-            "*.vcxproj",
-            "*.vcxproj.filters",
-            "*.vcxproj.user",
-            "*.sln",
-            "*.xcodeproj",
-            "*.xcworkspace",
-        }
-        
-        for i, v in ipairs(dirs_to_delete) do
-            os.rmdir(v)
+        if g_wkslight.clean.dirs_to_delete.enabled then
+            for i, v in ipairs(g_wkslight.clean.dirs_to_delete.items) do
+                os.rmdir(v)
+            end
         end
         
-        if false then
+        if g_wkslight.clean.files_to_delete.enabled then
             if os.istarget("windows") then
-                for i, v in ipairs(files_to_delete) do
-                    --os.remove(v)      -- This will only delete files in the current folder
-                    os.execute("del /F /Q /S " .. v)
+                for i, v in ipairs(g_wkslight.clean.files_to_delete.items) do
+                    os.execute("del /F /S /Q " .. v)
                 end
             else
                 os.execute("find . -name .DS_Store -delete")
-                for i, v in ipairs(files_to_delete) do
-                    os.execute("rm -rf " .. v)
+                for i, v in ipairs(g_wkslight.clean.files_to_delete.items) do
+                    os.execute(string.format("find . -type f -name '%s' -exec rm -fv {} +", v))
                 end
             end
         end
