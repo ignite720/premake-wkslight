@@ -165,10 +165,14 @@ function m.libs(libnames)
 
         if m.isenabled(libmeta) then
             local include_dirs, lib_dirs = libmeta.includedirs, libmeta.libdirs
-            if type(libmeta.additionalincludedirs) == "function" then
+            if libmeta.additionalincludedirs then
+                assert(type(libmeta.additionalincludedirs) == "function")
+                
                 include_dirs = table.join(include_dirs, libmeta.additionalincludedirs())
             end
-            if type(libmeta.additionallibdirs) == "function" then
+            if libmeta.additionallibdirs then
+                assert(type(libmeta.additionallibdirs) == "function")
+                
                 lib_dirs = table.join(lib_dirs, libmeta.additionallibdirs())
             end
 
@@ -188,12 +192,12 @@ function m.libs_executable(libnames)
         for i, v in ipairs(libnames) do
             local libmeta = m.workspace.libraries.projects[v]
 
-            m.tablemerge(vslocaldebugenvs, libmeta.vslocaldebugenv)
+            m.tablemerge(vslocaldebugenvs, libmeta.vslocaldebugenvs)
         end
 
         debugenvs({
             "$(LocalDebuggerEnvironment)",
-            string.format("PATH=%s;%%PATH%%", table.concat(vslocaldebugenvs, ";")),
+            string.format("PATH=%s;$(PATH)", table.concat(vslocaldebugenvs, ";")),
         })
     filter({})
 end
