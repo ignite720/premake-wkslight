@@ -195,10 +195,12 @@ function m.libs_executable(libnames)
             m.tablemerge(vslocaldebugenvs, libmeta.vslocaldebugenvs)
         end
 
-        debugenvs({
-            "$(LocalDebuggerEnvironment)",
-            string.format("PATH=%s;$(PATH)", table.concat(vslocaldebugenvs, ";")),
-        })
+        if #vslocaldebugenvs > 0 then
+            debugenvs({
+                "$(LocalDebuggerEnvironment)",
+                string.format("PATH=%s;$(PATH)", table.concat(vslocaldebugenvs, ";")),
+            })
+        end
     filter({})
 end
 
